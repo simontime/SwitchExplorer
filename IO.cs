@@ -9,6 +9,7 @@ namespace SwitchExplorer
 {
     internal class IO
     {
+        // Source: https://stackoverflow.com/a/19332770
         public static void PopulateTreeView(TreeView treeView, string[] paths, char pathSeparator)
         {
             TreeNode lastNode = null;
