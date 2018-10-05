@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace LibHac.Savefile
 {
@@ -30,7 +29,7 @@ namespace LibHac.Savefile
 
         public byte[] Data { get; }
 
-        public Header(Keyset keyset, BinaryReader reader, IProgressReport logger = null)
+        public Header(Keyset keyset, BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
             Data = reader.ReadBytes(0x4000);
@@ -85,17 +84,8 @@ namespace LibHac.Savefile
                 MetaMapEntries[i] = new MapEntry(reader);
             }
 
-            HeaderHashValidity = ValidateHeaderHash();
+            HeaderHashValidity = Crypto.CheckMemoryHashTable(Data, Layout.Hash, 0x300, 0x3d00);
             SignatureValidity = ValidateSignature(keyset);
-        }
-
-        private Validity ValidateHeaderHash()
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                var hash = sha256.ComputeHash(Data, 0x300, 0x3d00);
-                return Util.ArraysEqual(hash, Layout.Hash) ? Validity.Valid : Validity.Invalid;
-            }
         }
 
         private Validity ValidateSignature(Keyset keyset)

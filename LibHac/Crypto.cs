@@ -11,20 +11,19 @@ namespace LibHac
         internal const int Aes128Size = 0x10;
         internal const int Sha256DigestSize = 0x20;
 
-        public static bool CheckMemoryHashTable(byte[] data, byte[] hash)
+        public static Validity CheckMemoryHashTable(byte[] data, byte[] hash, int offset, int count)
         {
-            bool comp = false;
-            using (var _SHA = SHA256.Create())
+            Validity comp;
+            using (SHA256 sha = SHA256.Create())
             {
-                comp = Util.ArraysEqual(hash, _SHA.ComputeHash(data));
+                comp = Util.ArraysEqual(hash, sha.ComputeHash(data, offset, count)) ? Validity.Valid : Validity.Invalid;
             }
             return comp;
         }
 
-
         public static void DecryptEcb(byte[] key, byte[] src, int srcIndex, byte[] dest, int destIndex, int length)
         {
-            using (var aes = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
                 if (aes == null) throw new CryptographicException("Unable to create AES object");
                 aes.Key = key;
@@ -39,7 +38,7 @@ namespace LibHac
 
         public static void DecryptCbc(byte[] key, byte[] iv, byte[] src, int srcIndex, byte[] dest, int destIndex, int length)
         {
-            using (var aes = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
                 if (aes == null) throw new CryptographicException("Unable to create AES object");
                 aes.Key = key;
@@ -55,7 +54,7 @@ namespace LibHac
 
         public static void EncryptCbc(byte[] key, byte[] iv, byte[] src, int srcIndex, byte[] dest, int destIndex, int length)
         {
-            using (var aes = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
                 if (aes == null) throw new CryptographicException("Unable to create AES object");
                 aes.Key = key;
@@ -115,9 +114,9 @@ namespace LibHac
             Array.Copy(dec, 0x100, n, 0, 0x100);
             Array.Copy(dec, 0x200, e, 0, 4);
 
-            var dInt = GetBigInteger(d);
-            var nInt = GetBigInteger(n);
-            var eInt = GetBigInteger(e);
+            BigInteger dInt = GetBigInteger(d);
+            BigInteger nInt = GetBigInteger(n);
+            BigInteger eInt = GetBigInteger(e);
 
             RSAParameters rsaParams = RecoverRsaParameters(nInt, eInt, dInt);
             TestRsaKey(rsaParams);
@@ -264,7 +263,7 @@ namespace LibHac
                     Q = GetBytes(q, halfModLen),
                     DP = GetBytes(dp, halfModLen),
                     DQ = GetBytes(dq, halfModLen),
-                    InverseQ = GetBytes(inverseQ, halfModLen),
+                    InverseQ = GetBytes(inverseQ, halfModLen)
                 };
             }
         }
@@ -325,7 +324,7 @@ namespace LibHac
         // https://stackoverflow.com/questions/29163493/aes-cmac-calculation-c-sharp
         public static void CalculateAesCmac(byte[] key, byte[] src, int srcIndex, byte[] dest, int destIndex, int length)
         {
-            byte[] l = new byte[16];
+            var l = new byte[16];
             EncryptCbc(key, new byte[16], new byte[16], l, 0x10);
 
             byte[] firstSubkey = Rol(l);
@@ -337,7 +336,7 @@ namespace LibHac
                 secondSubkey[15] ^= 0x87;
 
             int paddingBytes = 16 - length % 16;
-            byte[] srcPadded = new byte[length + paddingBytes];
+            var srcPadded = new byte[length + paddingBytes];
 
             Array.Copy(src, srcIndex, srcPadded, 0, length);
 
@@ -354,7 +353,7 @@ namespace LibHac
                     srcPadded[length - 16 + j] ^= secondSubkey[j];
             }
 
-            byte[] encResult = new byte[length];
+            var encResult = new byte[length];
             EncryptCbc(key, new byte[16], srcPadded, encResult, length);
 
             Array.Copy(encResult, length - 0x10, dest, destIndex, 0x10);
@@ -362,7 +361,7 @@ namespace LibHac
 
         private static byte[] Rol(byte[] b)
         {
-            byte[] r = new byte[b.Length];
+            var r = new byte[b.Length];
             byte carry = 0;
 
             for (int i = b.Length - 1; i >= 0; i--)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Media;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using VGAudio.Formats;
@@ -32,6 +33,18 @@ namespace SwitchExplorer
         public Form1()
         {
             InitializeComponent();
+        }
+
+        public bool CheckExtension(string Target, string Extension)
+        {
+            if (Regex.Match(Extension, $"(?i){Target}").Success)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private string[] GetTitleMeta(string TitleID)
@@ -119,7 +132,8 @@ namespace SwitchExplorer
 
                     Input = Xci.SecurePartition.OpenFile
                     (
-                        Xci.SecurePartition.Files.OrderByDescending(s => s.Size)
+                        Xci.SecurePartition.Files
+                        .OrderByDescending(s => s.Size)
                         .FirstOrDefault()
                     );
                 }
@@ -197,14 +211,7 @@ namespace SwitchExplorer
                         )
                     );
 
-                    var Files = new string[Rom.Files.Count];
-
-                    for (int i = 0; i < Rom.Files.Count; i++)
-                    {
-                        Files[i] = Rom.Files[i].FullPath.Substring(1);
-                    }
-
-                    IO.PopulateTreeView(treeView1, Files, '/');
+                    IO.PopulateTreeView(treeView1.Nodes, Rom.RootDir);
                 }
                 catch (Exception)
                 {
@@ -273,7 +280,7 @@ namespace SwitchExplorer
 
                     var Ext = Name.Split('.')[Name.Count(c => c == '.')].ToUpper();
 
-                    if (Ext == "BFSTM")
+                    if (CheckExtension(Ext, "bfstm"))
                     {
                         try
                         {
@@ -297,7 +304,7 @@ namespace SwitchExplorer
                         {
                         }
                     }
-                    else if (Ext == "WAV")
+                    else if (CheckExtension(Ext, "bfstm"))
                     {
                         try
                         {
