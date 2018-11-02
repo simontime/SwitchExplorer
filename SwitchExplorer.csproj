@@ -26,13 +26,15 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>false</DebugSymbols>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -42,21 +44,16 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    <Reference Include="LibHac, Version=0.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LibHac.0.1.3\lib\net46\LibHac.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="VGAudio, Version=2.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\VGAudio.2.2.1\lib\net45\VGAudio.dll</HintPath>
     </Reference>
@@ -69,65 +66,6 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="IO.cs" />
-    <Compile Include="LibHac\Aes128CtrStream.cs" />
-    <Compile Include="LibHac\Aes128CtrTransform.cs" />
-    <Compile Include="LibHac\BitReader.cs" />
-    <Compile Include="LibHac\Bktr.cs" />
-    <Compile Include="LibHac\BktrCryptoStream.cs" />
-    <Compile Include="LibHac\BktrStructs.cs" />
-    <Compile Include="LibHac\Calibration.cs" />
-    <Compile Include="LibHac\Cnmt.cs" />
-    <Compile Include="LibHac\Crypto.cs" />
-    <Compile Include="LibHac\FileSystem.cs" />
-    <Compile Include="LibHac\HierarchicalIntegrityVerificationStream.cs" />
-    <Compile Include="LibHac\IFileSystem.cs" />
-    <Compile Include="LibHac\IntegrityVerificationStream.cs" />
-    <Compile Include="LibHac\IProgressReport.cs" />
-    <Compile Include="LibHac\Keyset.cs" />
-    <Compile Include="LibHac\Kip.cs" />
-    <Compile Include="LibHac\LibHacException.cs" />
-    <Compile Include="LibHac\Lz4.cs" />
-    <Compile Include="LibHac\MissingKeyException.cs" />
-    <Compile Include="LibHac\Nacp.cs" />
-    <Compile Include="LibHac\Nax0.cs" />
-    <Compile Include="LibHac\Nca.cs" />
-    <Compile Include="LibHac\NcaStructs.cs" />
-    <Compile Include="LibHac\Nso.cs" />
-    <Compile Include="LibHac\Package1.cs" />
-    <Compile Include="LibHac\Package2.cs" />
-    <Compile Include="LibHac\Pfs.cs" />
-    <Compile Include="LibHac\Pfs0Builder.cs" />
-    <Compile Include="LibHac\ProgressBar.cs" />
-    <Compile Include="LibHac\Romfs.cs" />
-    <Compile Include="LibHac\RomfsEntry.cs" />
-    <Compile Include="LibHac\Savefile\AllocationTable.cs" />
-    <Compile Include="LibHac\Savefile\AllocationTableIterator.cs" />
-    <Compile Include="LibHac\Savefile\AllocationTableStream.cs" />
-    <Compile Include="LibHac\Savefile\DuplexBitmap.cs" />
-    <Compile Include="LibHac\Savefile\DuplexFs.cs" />
-    <Compile Include="LibHac\Savefile\FsEntry.cs" />
-    <Compile Include="LibHac\Savefile\Header.cs" />
-    <Compile Include="LibHac\Savefile\Journal.cs" />
-    <Compile Include="LibHac\Savefile\LayeredDuplexFs.cs" />
-    <Compile Include="LibHac\Savefile\RemapStream.cs" />
-    <Compile Include="LibHac\Savefile\Savefile.cs" />
-    <Compile Include="LibHac\Streams\CombinationStream.cs" />
-    <Compile Include="LibHac\Streams\RandomAccessSectorStream.cs" />
-    <Compile Include="LibHac\Streams\SectorStream.cs" />
-    <Compile Include="LibHac\Streams\SharedStream.cs" />
-    <Compile Include="LibHac\Streams\SharedStreamSource.cs" />
-    <Compile Include="LibHac\Streams\SubStream.cs" />
-    <Compile Include="LibHac\SwitchFs.cs" />
-    <Compile Include="LibHac\Ticket.cs" />
-    <Compile Include="LibHac\Util.cs" />
-    <Compile Include="LibHac\Xci.cs" />
-    <Compile Include="LibHac\XciHeader.cs" />
-    <Compile Include="LibHac\XTSSharp\Xts.cs" />
-    <Compile Include="LibHac\XTSSharp\XtsAes128.cs" />
-    <Compile Include="LibHac\XTSSharp\XtsAes256.cs" />
-    <Compile Include="LibHac\XTSSharp\XtsCryptoTransform.cs" />
-    <Compile Include="LibHac\XTSSharp\XtsSectorStream.cs" />
-    <Compile Include="LibHac\XTSSharp\XtsStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -160,7 +98,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="LibHac\LibHac.csproj" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

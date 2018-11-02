@@ -1,0 +1,3 @@
+﻿The Simon license:
+You are free to use this software for modification, monetization and distribution, provided that no part(s) of this software, including but not limited to: binaries, code (lines, snippets, in its entirety or otherwise) or assets are redistributed without appropriate citation.
+If any of these terms are not met, I will invite you to my Discord server, take you into a voice channel and screech at you for 10 whole minutes. Good day!

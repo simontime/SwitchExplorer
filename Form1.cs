@@ -1,4 +1,5 @@
 ﻿using LibHac;
+using Newtonsoft.Json;
 using System;
 using System.Drawing;
 using System.IO;
@@ -26,36 +27,38 @@ namespace SwitchExplorer
 
         public Nca Nca { get; set; }
         public Nca Patch { get; set; }
+        public Nca Control { get; set; }
         public Romfs Rom { get; set; }
         public static SoundPlayer Audio { get; set; }
         public IAudioFormat SoundFile { get; set; }
 
-        public Form1()
-        {
-            InitializeComponent();
-        }
+        public Form1() => InitializeComponent();
 
         public bool CheckExtension(string Target, string Extension)
         {
-            if (Regex.Match(Extension, $"(?i){Target}").Success)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            if (Regex.Match(Extension, $"(?i){Target}").Success) return true;
+            else return false;
         }
 
-        private string[] GetTitleMeta(string TitleID)
+        private string[] GetTitleMeta(string TitleID = null)
         {
             var Info = new string[]
             {
                 "Title missing from database",
                 ""
             };
-
-            try
+            if (Control != null)
+            {
+                var Rom = new Romfs(Control.OpenSection(0, false, IntegrityCheckLevel.None));
+                var OpenControl = Rom.OpenFile(Rom.Files.FirstOrDefault(f => f.Name == "control.nacp"));
+                var OpenIcon = Rom.OpenFile(Rom.Files.FirstOrDefault(f => f.Name.Contains("icon")));
+                var ControlNacp = new Nacp(new BinaryReader(OpenControl));
+                var Lang = ControlNacp.Languages.FirstOrDefault(l => l.Title.Length > 1);
+                Info[0] = Lang.Title;
+                Info[1] = Lang.Developer;
+                pictureBox1.Image = Image.FromStream(OpenIcon);
+            }
+            else
             {
                 using (var WC = new WebClient())
                 {
@@ -75,9 +78,6 @@ namespace SwitchExplorer
                     );
                 }
             }
-            catch (Exception)
-            {
-            }
             return Info;
         }
 
@@ -87,25 +87,15 @@ namespace SwitchExplorer
 
             string FileToOpen = null;
 
-            if (Program.FileArg != null)
-            {
-                FileToOpen = Program.FileArg;
-            }
-            else
-            {
-                FileToOpen = openFileDialog1.FileName;
-            }
+            if (Program.FileArg != null) FileToOpen = Program.FileArg;
+            else FileToOpen = openFileDialog1.FileName;
 
             Program.FileArg = null;
-
             Stream Input = null;
 
             try
             {
-                string ExpEnv(string In)
-                {
-                    return Environment.ExpandEnvironmentVariables(In);
-                }
+                string ExpEnv(string In) => Environment.ExpandEnvironmentVariables(In);
 
                 var ProdKeys = ExpEnv(@"%USERPROFILE%\.switch\prod.keys");
                 var TitleKeys = ExpEnv(@"%USERPROFILE%\.switch\title.keys");
@@ -118,107 +108,94 @@ namespace SwitchExplorer
                 {
                     var InputPFS = File.OpenRead(FileToOpen);
                     var Pfs = new Pfs(InputPFS);
-
-                    Input = Pfs.OpenFile
-                    (
-                        Pfs.Files.OrderByDescending(s => s.Size)
-                        .FirstOrDefault()
-                    );
+                    var CnmtNca = new Nca(Keys, Pfs.OpenFile(Pfs.Files.FirstOrDefault(s => s.Name.Contains(".cnmt.nca"))), false);
+                    var CnmtPfs = new Pfs(CnmtNca.OpenSection(0, false, IntegrityCheckLevel.None));
+                    var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
+                    var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
+                    var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
+                    Control = new Nca(Keys, Pfs.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    Input = Pfs.OpenFile($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
                 else if (Ext == ".xci")
                 {
                     var InputPFS = File.OpenRead(FileToOpen);
                     var Xci = new Xci(Keys, InputPFS);
-
-                    Input = Xci.SecurePartition.OpenFile
-                    (
-                        Xci.SecurePartition.Files
-                        .OrderByDescending(s => s.Size)
-                        .FirstOrDefault()
-                    );
+                    var CnmtNca = new Nca(Keys, Xci.SecurePartition.OpenFile(Xci.SecurePartition.Files.FirstOrDefault(s => s.Name.Contains(".cnmt.nca"))), false);
+                    var CnmtPfs = new Pfs(CnmtNca.OpenSection(0, false, IntegrityCheckLevel.None));
+                    var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
+                    var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
+                    var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
+                    Control = new Nca(Keys, Xci.SecurePartition.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    Input = Xci.SecurePartition.OpenFile($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
-                else
+                else if (FileToOpen.Split('.')[1] == "cnmt" && Ext == ".nca")
                 {
-                    Input = File.OpenRead(FileToOpen);
+                    var TargetFile = File.OpenRead(FileToOpen);
+                    var CnmtNca = new Nca(Keys, TargetFile, false);
+                    var CnmtPfs = new Pfs(CnmtNca.OpenSection(0, false, IntegrityCheckLevel.None));
+                    var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
+                    var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
+                    var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
+                    Control = new Nca(Keys, File.OpenRead($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    Input = File.OpenRead($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
+                else Input = File.OpenRead(FileToOpen);
 
                 try
                 {
                     Nca = new Nca(Keys, Input, true);
 
-                    if (Nca.HasRightsId)
+                    if (Nca.HasRightsId && !Keys.TitleKeys.Keys.Any(k => k.SequenceEqual(Nca.Header.RightsId)))
+                        MessageBox.Show($"Error: the titlekey for {Nca.Header.RightsId.ToHexString().ToLower()} is not present in your key file.");
+                    else
                     {
-                        if (!Keys.TitleKeys.Keys.Contains(Nca.Header.RightsId))
+                        bool isUpdateNca = false;
+
+                        if (Nca.Sections.Any(s => s?.Type == SectionType.Bktr))
+                            isUpdateNca = true;
+
+                        if (isUpdateNca)
                         {
-                            MessageBox.Show($"Error: the titlekey for {Nca.Header.RightsId.ToHexString()} is not present in your key file.");
+                            openFileDialog1.Title = "Select base Nca";
+                            openFileDialog1.ShowDialog();
+                            var Input2 = File.OpenRead(openFileDialog1.FileName);
+                            Patch = new Nca(Keys, Input2, true);
+                            Nca.SetBaseNca(Patch);
                         }
-                    }
 
-                    bool IsUpdateNca = false;
-
-                    foreach (var Section in Nca.Sections)
-                    {
-                        if (Section?.Type == SectionType.Bktr)
-                        {
-                            IsUpdateNca = true;
-                        }
-                    }
-
-                    if (IsUpdateNca)
-                    {
-                        openFileDialog1.Title = "Select base Nca";
-                        openFileDialog1.ShowDialog();
-                        var Input2 = File.OpenRead(openFileDialog1.FileName);
-                        Patch = new Nca(Keys, Input2, true);
-                        Nca.SetBaseNca(Patch);
-                    }
-
-                    new Thread
-                    (
-                        () =>
-                        {
-                            Thread.CurrentThread.IsBackground = true;
-                            var Info = GetTitleMeta($"{Nca.Header.TitleId:x16}");
-
-                            label2.Invoke
-                            (
-                                new Action
-                                (
-                                    () => { label2.Text = Info[0]; }
-                                )
-                            );
-
-                            label3.Invoke
-                            (
-                                new Action
-                                (
-                                    () => { label3.Text = Info[1]; }
-                                )
-                            );
-                        }
-                    )
-                    .Start();
-
-                    Rom = new Romfs
-                    (
-                        Nca.OpenSection
+                        new Thread
                         (
-                            Nca.Sections.FirstOrDefault
-                            (s => s?.Type == SectionType.Romfs || s?.Type == SectionType.Bktr)
-                            .SectionNum,
-                            false,
-                            false
-                        )
-                    );
+                            () =>
+                            {
+                                Thread.CurrentThread.IsBackground = true;
+                                var Info = GetTitleMeta($"{Nca.Header.TitleId:x16}");
 
-                    IO.PopulateTreeView(treeView1.Nodes, Rom.RootDir);
+                                label2.Invoke(new Action(() => { label2.Text = Info[0]; label3.Text = Info[1]; }));
+                            }
+                        )
+                        .Start();
+
+                        Rom = new Romfs
+                        (
+                            Nca.OpenSection
+                            (
+                                Nca.Sections.FirstOrDefault
+                                (s => s?.Type == SectionType.Romfs || s?.Type == SectionType.Bktr)
+                                .SectionNum,
+                                false,
+                                IntegrityCheckLevel.None
+                            )
+                        );
+
+                        IO.PopulateTreeView(treeView1.Nodes, Rom.RootDir);
+                    }
                 }
-                catch (Exception)
+                catch
                 {
                     MessageBox.Show("There was an error reading the NCA. Are you sure the correct keys are present in your keyfiles?");
                 }
             }
-            catch (Exception)
+            catch (ArgumentNullException)
             {
                 MessageBox.Show("Error: key files are missing!");
             }
@@ -304,7 +281,7 @@ namespace SwitchExplorer
                         {
                         }
                     }
-                    else if (CheckExtension(Ext, "bfstm"))
+                    else if (CheckExtension(Ext, "wav"))
                     {
                         try
                         {
@@ -496,26 +473,84 @@ namespace SwitchExplorer
 
         private void dToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            folderBrowserDialog1.ShowDialog();
+            bool FoundExefs = false;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (Nca.Header.ContentType == ContentType.Program && i == (int)ProgramPartitionType.Code)
+                {
+                    FoundExefs = true;
+                    Nca.ExtractSection(i, folderBrowserDialog1.SelectedPath);
+                }
+            }
+
+            if (!FoundExefs) MessageBox.Show("Error: this NCA does not contain an ExeFS partition.");
+        }
+
+        private void listOfFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            folderBrowserDialog1.ShowDialog();
+            File.WriteAllLines($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_files.txt", Rom.FileDict.Keys);
+        }
+
+        private void iconToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Control != null)
+            {
+                using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
+                {
+                    var Romfs = new Romfs(Rom);
+                    folderBrowserDialog1.ShowDialog();
+
+                    using (var Icon = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name.Contains("icon"))))
+                        Icon.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Control.Header.TitleId:x16}_icon.jpg");
+                }
+            }
+            else if (pictureBox1.Image != null)
             {
                 folderBrowserDialog1.ShowDialog();
-                bool FoundExefs = false;
-                foreach (var Section in Nca.Sections)
+                pictureBox1.Image.Save($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_icon.jpg");
+            }
+            else MessageBox.Show("Error: No control is present and icon is not in the database!");
+        }
+
+        private void rawToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Control != null)
+            {
+                using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
                 {
-                    if (Section.IsExefs)
+                    var Romfs = new Romfs(Rom);
+                    folderBrowserDialog1.ShowDialog();
+                    using (var Nacp = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
+                        Nacp.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.nacp");
+                }
+            }
+            else MessageBox.Show("Error: No control is present!");
+        }
+
+        private void jSONToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Control != null)
+            {
+                using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
+                {
+                    var Romfs = new Romfs(Rom);
+                    folderBrowserDialog1.ShowDialog();
+                    using (var InFile = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
+                    using (var Read = new BinaryReader(InFile))
                     {
-                        FoundExefs = true;
-                        Nca.ExtractSection(Section.SectionNum, folderBrowserDialog1.SelectedPath);
+                        var Nacp = new Nacp(Read);
+
+                        var Settings = new JsonSerializerSettings { Formatting = Formatting.Indented };
+
+                        File.WriteAllText($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.json",
+                            JsonConvert.SerializeObject(Nacp, Settings));
                     }
                 }
-                if (!FoundExefs)
-                {
-                    MessageBox.Show("Error: this NCA does not contain an ExeFS partition.");
-                }
             }
-            catch (Exception)
-            {
-            }
+            else MessageBox.Show("Error: No control is present!");
         }
     }
 }

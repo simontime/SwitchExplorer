@@ -37,6 +37,12 @@
             this.dToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectedFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.listOfFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iconToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.controlNACPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.jSONToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.expandAllNodesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -89,7 +95,7 @@
             this.openToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.openToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -99,10 +105,11 @@
             this.extractToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dToolStripMenuItem,
             this.selectedFileToolStripMenuItem,
-            this.allFilesToolStripMenuItem});
+            this.allFilesToolStripMenuItem,
+            this.toolStripMenuItem1});
             this.extractToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.extractToolStripMenuItem.Name = "extractToolStripMenuItem";
-            this.extractToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.extractToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.extractToolStripMenuItem.Text = "Extract...";
             // 
             // dToolStripMenuItem
@@ -110,7 +117,7 @@
             this.dToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.dToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.dToolStripMenuItem.Name = "dToolStripMenuItem";
-            this.dToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.dToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.dToolStripMenuItem.Text = "ExeFS";
             this.dToolStripMenuItem.Click += new System.EventHandler(this.dToolStripMenuItem_Click);
             // 
@@ -119,7 +126,7 @@
             this.selectedFileToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.selectedFileToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.selectedFileToolStripMenuItem.Name = "selectedFileToolStripMenuItem";
-            this.selectedFileToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.selectedFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.selectedFileToolStripMenuItem.Text = "Selected file/folder";
             this.selectedFileToolStripMenuItem.Click += new System.EventHandler(this.selectedFileToolStripMenuItem_Click);
             // 
@@ -128,16 +135,75 @@
             this.allFilesToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.allFilesToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.allFilesToolStripMenuItem.Name = "allFilesToolStripMenuItem";
-            this.allFilesToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.allFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.allFilesToolStripMenuItem.Text = "All files";
             this.allFilesToolStripMenuItem.Click += new System.EventHandler(this.allFilesToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.listOfFilesToolStripMenuItem,
+            this.iconToolStripMenuItem,
+            this.controlNACPToolStripMenuItem});
+            this.toolStripMenuItem1.ForeColor = System.Drawing.SystemColors.Control;
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem1.Text = "Meta";
+            // 
+            // listOfFilesToolStripMenuItem
+            // 
+            this.listOfFilesToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.listOfFilesToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
+            this.listOfFilesToolStripMenuItem.Name = "listOfFilesToolStripMenuItem";
+            this.listOfFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.listOfFilesToolStripMenuItem.Text = "List of files";
+            this.listOfFilesToolStripMenuItem.Click += new System.EventHandler(this.listOfFilesToolStripMenuItem_Click);
+            // 
+            // iconToolStripMenuItem
+            // 
+            this.iconToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.iconToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
+            this.iconToolStripMenuItem.Name = "iconToolStripMenuItem";
+            this.iconToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.iconToolStripMenuItem.Text = "Icon";
+            this.iconToolStripMenuItem.Click += new System.EventHandler(this.iconToolStripMenuItem_Click);
+            // 
+            // controlNACPToolStripMenuItem
+            // 
+            this.controlNACPToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.controlNACPToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rawToolStripMenuItem,
+            this.jSONToolStripMenuItem});
+            this.controlNACPToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
+            this.controlNACPToolStripMenuItem.Name = "controlNACPToolStripMenuItem";
+            this.controlNACPToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.controlNACPToolStripMenuItem.Text = "NACP";
+            // 
+            // rawToolStripMenuItem
+            // 
+            this.rawToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.rawToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
+            this.rawToolStripMenuItem.Name = "rawToolStripMenuItem";
+            this.rawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.rawToolStripMenuItem.Text = "Raw";
+            this.rawToolStripMenuItem.Click += new System.EventHandler(this.rawToolStripMenuItem_Click);
+            // 
+            // jSONToolStripMenuItem
+            // 
+            this.jSONToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.jSONToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
+            this.jSONToolStripMenuItem.Name = "jSONToolStripMenuItem";
+            this.jSONToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.jSONToolStripMenuItem.Text = "JSON";
+            this.jSONToolStripMenuItem.Click += new System.EventHandler(this.jSONToolStripMenuItem_Click);
             // 
             // expandAllNodesToolStripMenuItem
             // 
             this.expandAllNodesToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.expandAllNodesToolStripMenuItem.ForeColor = System.Drawing.SystemColors.Control;
             this.expandAllNodesToolStripMenuItem.Name = "expandAllNodesToolStripMenuItem";
-            this.expandAllNodesToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.expandAllNodesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.expandAllNodesToolStripMenuItem.Text = "Expand all nodes";
             this.expandAllNodesToolStripMenuItem.Click += new System.EventHandler(this.expandAllNodesToolStripMenuItem_Click);
             // 
@@ -392,6 +458,12 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.ToolStripMenuItem dToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem listOfFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iconToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem controlNACPToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rawToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem jSONToolStripMenuItem;
     }
 }
 
