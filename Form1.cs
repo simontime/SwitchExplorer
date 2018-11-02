@@ -60,23 +60,27 @@ namespace SwitchExplorer
             }
             else
             {
-                using (var WC = new WebClient())
+                try
                 {
-                    var Cli = WC.DownloadData($"https://gamechat.network/nucleus?title_id={TitleID}");
-                    pictureBox1.Image = Image.FromStream(new MemoryStream(Cli));
+                    using (var WC = new WebClient())
+                    {
+                        var Cli = WC.DownloadData($"https://gamechat.network/nucleus?title_id={TitleID}");
+                        pictureBox1.Image = Image.FromStream(new MemoryStream(Cli));
 
-                    Info[0] = Encoding.UTF8.GetString
-                    (
-                        WC.ResponseHeaders.Get("X-GCN-Game-Name")
-                        .Select(b => (byte)b).ToArray()
-                    );
+                        Info[0] = Encoding.UTF8.GetString
+                        (
+                            WC.ResponseHeaders.Get("X-GCN-Game-Name")
+                            .Select(b => (byte)b).ToArray()
+                        );
 
-                    Info[1] = Encoding.UTF8.GetString
-                    (
-                        WC.ResponseHeaders.Get("X-GCN-Game-Dev")
-                        .Select(b => (byte)b).ToArray()
-                    );
+                        Info[1] = Encoding.UTF8.GetString
+                        (
+                            WC.ResponseHeaders.Get("X-GCN-Game-Dev")
+                            .Select(b => (byte)b).ToArray()
+                        );
+                    }
                 }
+                catch { }
             }
             return Info;
         }
@@ -113,7 +117,8 @@ namespace SwitchExplorer
                     var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
                     var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
                     var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
-                    Control = new Nca(Keys, Pfs.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    if (CtrlEntry != null)
+                        Control = new Nca(Keys, Pfs.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
                     Input = Pfs.OpenFile($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
                 else if (Ext == ".xci")
@@ -125,7 +130,8 @@ namespace SwitchExplorer
                     var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
                     var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
                     var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
-                    Control = new Nca(Keys, Xci.SecurePartition.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    if (CtrlEntry != null)
+                        Control = new Nca(Keys, Xci.SecurePartition.OpenFile($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
                     Input = Xci.SecurePartition.OpenFile($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
                 else if (FileToOpen.Split('.')[1] == "cnmt" && Ext == ".nca")
@@ -136,7 +142,8 @@ namespace SwitchExplorer
                     var Cnmt = new Cnmt(CnmtPfs.OpenFile(CnmtPfs.Files[0]));
                     var Program = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Program);
                     var CtrlEntry = Cnmt.ContentEntries.FirstOrDefault(c => c.Type == CnmtContentType.Control);
-                    Control = new Nca(Keys, File.OpenRead($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
+                    if (CtrlEntry != null)
+                        Control = new Nca(Keys, File.OpenRead($"{CtrlEntry.NcaId.ToHexString().ToLower()}.nca"), false);
                     Input = File.OpenRead($"{Program.NcaId.ToHexString().ToLower()}.nca");
                 }
                 else Input = File.OpenRead(FileToOpen);
@@ -201,22 +208,15 @@ namespace SwitchExplorer
             }
         }
 
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-        }
-
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openFileDialog1.ShowDialog();
-            Open();
+            var Dialog = openFileDialog1.ShowDialog();
+            if (Dialog != DialogResult.Cancel) Open();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (Program.FileArg != null)
-            {
-                Open();
-            }
+            if (Program.FileArg != null)Open();
         }
 
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -402,8 +402,8 @@ namespace SwitchExplorer
 
         private void allFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            folderBrowserDialog1.ShowDialog();
-            Rom.Extract(folderBrowserDialog1.SelectedPath);
+            var Dialog = folderBrowserDialog1.ShowDialog();
+            if (Dialog != DialogResult.Cancel) Rom.Extract(folderBrowserDialog1.SelectedPath);
         }
 
         private void expandAllNodesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -473,19 +473,22 @@ namespace SwitchExplorer
 
         private void dToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            folderBrowserDialog1.ShowDialog();
-            bool FoundExefs = false;
-
-            for (int i = 0; i < 4; i++)
+            var Dialog = folderBrowserDialog1.ShowDialog();
+            if (Dialog != DialogResult.Cancel)
             {
-                if (Nca.Header.ContentType == ContentType.Program && i == (int)ProgramPartitionType.Code)
-                {
-                    FoundExefs = true;
-                    Nca.ExtractSection(i, folderBrowserDialog1.SelectedPath);
-                }
-            }
+                bool FoundExefs = false;
 
-            if (!FoundExefs) MessageBox.Show("Error: this NCA does not contain an ExeFS partition.");
+                for (int i = 0; i < 4; i++)
+                {
+                    if (Nca.Header.ContentType == ContentType.Program && i == (int)ProgramPartitionType.Code)
+                    {
+                        FoundExefs = true;
+                        Nca.ExtractSection(i, folderBrowserDialog1.SelectedPath);
+                    }
+                }
+
+                if (!FoundExefs) MessageBox.Show("Error: this NCA does not contain an ExeFS partition.");
+            }
         }
 
         private void listOfFilesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -501,16 +504,18 @@ namespace SwitchExplorer
                 using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
                 {
                     var Romfs = new Romfs(Rom);
-                    folderBrowserDialog1.ShowDialog();
+                    var Dialog = folderBrowserDialog1.ShowDialog();
 
-                    using (var Icon = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name.Contains("icon"))))
-                        Icon.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Control.Header.TitleId:x16}_icon.jpg");
+                    if (Dialog != DialogResult.Cancel)
+                        using (var Icon = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name.Contains("icon"))))
+                            Icon.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Control.Header.TitleId:x16}_icon.jpg");
                 }
             }
             else if (pictureBox1.Image != null)
             {
-                folderBrowserDialog1.ShowDialog();
-                pictureBox1.Image.Save($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_icon.jpg");
+                var Dialog = folderBrowserDialog1.ShowDialog();
+                if (Dialog != DialogResult.Cancel)
+                    pictureBox1.Image.Save($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_icon.jpg");
             }
             else MessageBox.Show("Error: No control is present and icon is not in the database!");
         }
@@ -522,9 +527,10 @@ namespace SwitchExplorer
                 using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
                 {
                     var Romfs = new Romfs(Rom);
-                    folderBrowserDialog1.ShowDialog();
-                    using (var Nacp = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
-                        Nacp.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.nacp");
+                    var Dialog = folderBrowserDialog1.ShowDialog();
+                    if (Dialog != DialogResult.Cancel)
+                        using (var Nacp = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
+                            Nacp.WriteAllBytes($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.nacp");
                 }
             }
             else MessageBox.Show("Error: No control is present!");
@@ -537,17 +543,18 @@ namespace SwitchExplorer
                 using (var Rom = Control.OpenSection(0, false, IntegrityCheckLevel.None))
                 {
                     var Romfs = new Romfs(Rom);
-                    folderBrowserDialog1.ShowDialog();
-                    using (var InFile = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
-                    using (var Read = new BinaryReader(InFile))
-                    {
-                        var Nacp = new Nacp(Read);
+                    var Dialog = folderBrowserDialog1.ShowDialog();
+                    if (Dialog != DialogResult.Cancel)
+                        using (var InFile = Romfs.OpenFile(Romfs.Files.FirstOrDefault(f => f.Name == "control.nacp")))
+                        using (var Read = new BinaryReader(InFile))
+                        {
+                            var Nacp = new Nacp(Read);
 
-                        var Settings = new JsonSerializerSettings { Formatting = Formatting.Indented };
+                            var Settings = new JsonSerializerSettings { Formatting = Formatting.Indented };
 
-                        File.WriteAllText($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.json",
-                            JsonConvert.SerializeObject(Nacp, Settings));
-                    }
+                            File.WriteAllText($"{folderBrowserDialog1.SelectedPath}/{Nca.Header.TitleId:x16}_control.json",
+                                JsonConvert.SerializeObject(Nacp, Settings));
+                        }
                 }
             }
             else MessageBox.Show("Error: No control is present!");
