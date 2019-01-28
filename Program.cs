@@ -13,7 +13,7 @@ namespace SwitchExplorer
             if (args.Length > 0) FileArg = args[0];
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new UI());
         }
     }
 }
